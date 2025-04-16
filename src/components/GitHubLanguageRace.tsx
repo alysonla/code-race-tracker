@@ -1,4 +1,3 @@
-
 import React, { useEffect, useRef, useState } from 'react';
 import * as echarts from 'echarts';
 import { githubLanguageData, yearLabels } from '@/data/githubLanguageData';
@@ -31,6 +30,21 @@ const GitHubLanguageRace: React.FC = () => {
       chartInstance.current = echarts.init(chartRef.current, undefined, {
         renderer: 'canvas'
       });
+      
+      const renderEndLabels = () => {
+        if (chartInstance.current) {
+          // Update chart to show end labels after animation completes
+          chartInstance.current.setOption({
+            series: githubLanguageData.map(item => ({
+              name: item.name,
+              endLabel: {
+                show: true
+              }
+            }))
+          });
+          setAnimationFinished(true);
+        }
+      };
       
       const option: echarts.EChartsOption = {
         title: {
@@ -134,23 +148,8 @@ const GitHubLanguageRace: React.FC = () => {
           }
         },
         series: githubLanguageData.map(item => {
-          // Determine when to show end labels for specific languages
-          let shouldShowEndLabel = true;
-          
-          // TypeScript only appears from 2019 (index 5) onwards
-          if (item.name === 'TypeScript') {
-            // Only show TypeScript label when animation is finished
-            shouldShowEndLabel = animationFinished;
-          } 
-          // Go only appears in 2023 (index 9) onwards
-          else if (item.name === 'Go') {
-            // Only show Go label when animation is finished
-            shouldShowEndLabel = animationFinished;
-          }
-          // Always show labels for Ruby and Obj-C even though they disappear
-          else if (item.name === 'Ruby' || item.name === 'Obj-C') {
-            shouldShowEndLabel = true;
-          }
+          // Hide end labels initially for all languages
+          const initialShowEndLabel = !(item.name === 'TypeScript' || item.name === 'Go');
           
           return {
             name: item.name,
@@ -178,7 +177,7 @@ const GitHubLanguageRace: React.FC = () => {
             },
             data: item.values,
             endLabel: {
-              show: shouldShowEndLabel,
+              show: initialShowEndLabel,
               formatter: (params) => {
                 return item.name;
               },
@@ -201,25 +200,22 @@ const GitHubLanguageRace: React.FC = () => {
 
       chartInstance.current.setOption(option);
       
-      // Set animation finished flag after the animation completes
+      // Register animation end event handler
+      chartInstance.current.on('finished', renderEndLabels);
+      
+      // Fallback in case the 'finished' event doesn't fire
       setTimeout(() => {
-        setAnimationFinished(true);
-        // Update the chart with the new endLabel settings
-        if (chartInstance.current) {
-          chartInstance.current.setOption({
-            series: githubLanguageData.map(item => ({
-              name: item.name,
-              endLabel: {
-                show: true
-              }
-            }))
-          });
+        if (!animationFinished) {
+          renderEndLabels();
         }
-      }, 6000); // Wait a bit longer than animationDuration to ensure animation is complete
+      }, 5500); // Slightly longer than animationDuration to ensure animation is complete
     }
 
     return () => {
       window.removeEventListener('resize', handleResize);
+      if (chartInstance.current) {
+        chartInstance.current.off('finished');
+      }
     };
   }, [animationFinished]);
 
