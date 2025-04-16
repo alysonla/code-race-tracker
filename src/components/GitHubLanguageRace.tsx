@@ -60,14 +60,11 @@ const GitHubLanguageRace: React.FC = () => {
             color: '#fff'
           },
           formatter: function(params) {
-            // Filter out points with null values
             const validPoints = params.filter(param => param.value !== null && param.value !== undefined);
             if (validPoints.length === 0) return '';
             
-            // Create tooltip content with year as title
             let result = `<div style="margin: 0 0 5px 0; font-weight: bold;">${validPoints[0].axisValue}</div>`;
             
-            // Add each valid data point
             validPoints.forEach(param => {
               result += `<div style="display: flex; align-items: center; margin: 3px 0;">
                 <span style="display: inline-block; width: 10px; height: 10px; background-color: ${param.color}; border-radius: 50%; margin-right: 5px;"></span>
@@ -162,9 +159,7 @@ const GitHubLanguageRace: React.FC = () => {
           endLabel: {
             show: true,
             formatter: (params) => {
-              // Only show end label if the last value is not null
-              const lastValue = item.values[item.values.length - 1];
-              return lastValue !== null ? item.name : '';
+              return item.name;
             },
             color: '#fff',
             fontSize: 14,
