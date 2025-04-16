@@ -48,12 +48,12 @@ export const githubLanguageData = [
   {
     name: 'Go',
     color: '#F58560',
-    values: [null, null, null, null, null, null, null, null, null, 10, 10]
+    values: [null, null, null, null, null, null, null, null, 10, 10, 10]
   },
   {
     name: 'Ruby',
     color: '#D4A675',
-    values: [5, 5, 7, 10, 10, 10, 10, 10, 10, null, null]
+    values: [5, 5, 7, 10, 10, 10, 10, 10, null, null, null]
   },
   {
     name: 'Obj-C',
