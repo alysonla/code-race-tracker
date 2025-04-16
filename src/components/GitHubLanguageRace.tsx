@@ -1,3 +1,4 @@
+
 import React, { useEffect, useRef, useState } from 'react';
 import * as echarts from 'echarts';
 import { githubLanguageData, yearLabels } from '@/data/githubLanguageData';
@@ -7,6 +8,7 @@ const GitHubLanguageRace: React.FC = () => {
   const chartRef = useRef<HTMLDivElement>(null);
   const chartInstance = useRef<echarts.ECharts | null>(null);
   const [animationFinished, setAnimationFinished] = useState(false);
+  const [chartReady, setChartReady] = useState(false);
 
   useEffect(() => {
     return () => {
@@ -27,6 +29,7 @@ const GitHubLanguageRace: React.FC = () => {
     window.addEventListener('resize', handleResize);
 
     if (chartRef.current && !chartInstance.current) {
+      // Initialize chart without animation
       chartInstance.current = echarts.init(chartRef.current, undefined, {
         renderer: 'canvas'
       });
@@ -188,22 +191,16 @@ const GitHubLanguageRace: React.FC = () => {
             z: 10 - Math.min(...item.values.filter(v => v !== null))
           };
         }),
-        animationDuration: 3000,
+        // Initially set animation duration to 0 to render the first frame
+        animationDuration: 0,
         animationEasing: 'cubicInOut',
-        animationDelay: (idx: number) => idx * 300,
-        animationDurationUpdate: 300,
+        animationDelay: 0,
+        animationDurationUpdate: 0,
         animationEasingUpdate: 'linear'
       };
 
       chartInstance.current.setOption(option);
-      
-      chartInstance.current.on('finished', renderEndLabels, { priority: 'high' });
-      
-      setTimeout(() => {
-        if (!animationFinished) {
-          renderEndLabels();
-        }
-      }, 3500);
+      setChartReady(true);
     }
 
     return () => {
@@ -212,7 +209,51 @@ const GitHubLanguageRace: React.FC = () => {
         chartInstance.current.off('finished');
       }
     };
-  }, [animationFinished]);
+  }, []);
+
+  // Start animation after chart is ready with a delay
+  useEffect(() => {
+    if (chartReady && chartInstance.current) {
+      // Delay animation start by 1.5 seconds
+      const animationDelay = setTimeout(() => {
+        if (chartInstance.current) {
+          const renderEndLabels = () => {
+            if (chartInstance.current) {
+              chartInstance.current.setOption({
+                series: githubLanguageData.map(item => ({
+                  name: item.name,
+                  endLabel: {
+                    show: true
+                  }
+                }))
+              });
+              setAnimationFinished(true);
+            }
+          };
+
+          // Start animation with proper settings
+          chartInstance.current.setOption({
+            animationDuration: 3000,
+            animationDelay: (idx: number) => idx * 300,
+            animationDurationUpdate: 300,
+            animationEasingUpdate: 'linear'
+          });
+          
+          chartInstance.current.on('finished', renderEndLabels, { priority: 'high' });
+          
+          setTimeout(() => {
+            if (!animationFinished) {
+              renderEndLabels();
+            }
+          }, 3500);
+        }
+      }, 1500);
+
+      return () => {
+        clearTimeout(animationDelay);
+      };
+    }
+  }, [chartReady, animationFinished]);
 
   return (
     <div className="w-full h-full bg-[#0A0A29] rounded-lg shadow-xl overflow-hidden border border-white/10">
