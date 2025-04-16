@@ -7,33 +7,34 @@ import { cn } from '@/lib/utils';
 const GitHubLanguageRace: React.FC = () => {
   const chartRef = useRef<HTMLDivElement>(null);
   const chartInstance = useRef<echarts.ECharts | null>(null);
-  const [isInitialized, setIsInitialized] = useState(false);
 
   useEffect(() => {
-    if (chartRef.current && !isInitialized) {
-      // Initialize chart with appropriate renderer
+    // Cleanup function to dispose chart when component unmounts
+    return () => {
+      if (chartInstance.current) {
+        chartInstance.current.dispose();
+        chartInstance.current = null;
+      }
+    };
+  }, []);
+
+  useEffect(() => {
+    // Initialize or resize chart when component mounts or window resizes
+    const handleResize = () => {
+      if (chartInstance.current) {
+        chartInstance.current.resize();
+      }
+    };
+    
+    window.addEventListener('resize', handleResize);
+
+    // Initialize chart if not already done
+    if (chartRef.current && !chartInstance.current) {
       chartInstance.current = echarts.init(chartRef.current, undefined, {
         renderer: 'canvas'
       });
       
-      setIsInitialized(true);
-
-      // Handle resize
-      const handleResize = () => {
-        chartInstance.current?.resize();
-      };
-      window.addEventListener('resize', handleResize);
-
-      return () => {
-        window.removeEventListener('resize', handleResize);
-        chartInstance.current?.dispose();
-      };
-    }
-  }, [isInitialized]);
-
-  useEffect(() => {
-    if (chartInstance.current && isInitialized) {
-      // Set options
+      // Set chart options
       const option: echarts.EChartsOption = {
         title: {
           text: 'Top programming languages on GitHub',
@@ -89,7 +90,7 @@ const GitHubLanguageRace: React.FC = () => {
         },
         xAxis: {
           type: 'category',
-          data: ['2014', '2015', '2016', '2017', '2018', '2019', '2020', '2021', '2022', '2023', '2024'],
+          data: yearLabels,
           axisLine: {
             lineStyle: {
               color: 'rgba(255, 255, 255, 0.3)'
@@ -178,10 +179,15 @@ const GitHubLanguageRace: React.FC = () => {
         animationDelay: (idx: number) => idx * 100
       };
 
-      // Apply options
+      // Set options to chart instance
       chartInstance.current.setOption(option);
     }
-  }, [isInitialized]);
+
+    // Cleanup event listener
+    return () => {
+      window.removeEventListener('resize', handleResize);
+    };
+  }, []);
 
   return (
     <div className="w-full h-full bg-[#0A0A29] rounded-lg shadow-xl overflow-hidden border border-white/10">
