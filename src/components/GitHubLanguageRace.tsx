@@ -83,7 +83,7 @@ const GitHubLanguageRace: React.FC = () => {
         grid: {
           left: 70,
           right: 120,
-          top: 90, // Increased to accommodate more space below the subtitle
+          top: 120,
           bottom: 50
         },
         xAxis: {
