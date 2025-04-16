@@ -50,37 +50,57 @@ const GitHubLanguageRace: React.FC = () => {
           }
         },
         backgroundColor: '#0A0A29',
-        tooltip: {
-          trigger: 'axis',
-          axisPointer: {
-            type: 'cross'
-          },
-          backgroundColor: 'rgba(10, 10, 41, 0.9)',
-          borderColor: 'rgba(255, 255, 255, 0.2)',
-          textStyle: {
-            color: '#fff'
-          },
-          formatter: function(params) {
-            const validPoints = params.filter(param => param.value !== null && param.value !== undefined);
-            if (validPoints.length === 0) return '';
-            
-            let result = `<div style="margin: 0 0 5px 0; font-weight: bold;">${validPoints[0].axisValue}</div>`;
-            
-            validPoints.forEach(param => {
-              result += `<div style="display: flex; align-items: center; margin: 3px 0;">
-                <span style="display: inline-block; width: 10px; height: 10px; background-color: ${param.color}; border-radius: 50%; margin-right: 5px;"></span>
-                <span style="margin-right: 5px;">${param.seriesName}:</span>
-                <span style="font-weight: bold;">${param.value === null ? '-' : `Rank #${param.value}`}</span>
-              </div>`;
-            });
-            
-            return result;
-          }
-        },
+    tooltip: {
+      trigger: 'axis',
+      axisPointer: {
+      type: 'cross',
+      snap: true,
+      label: {
+      show: false
+      }
+    },
+  backgroundColor: 'rgba(10, 10, 41, 0.9)',
+  borderColor: 'rgba(255, 255, 255, 0.2)',
+  textStyle: {
+    color: '#fff'
+  },
+  formatter: function (params) {
+    // Filter out null values.
+    const validPoints = params.filter(p => p.value !== null && p.value !== undefined);
+    if (validPoints.length === 0) return '';
+    
+    // Sort them by their value. 
+    // For example, ascending by rank:
+    validPoints.sort((a, b) => (a.value as number) - (b.value as number));
+    // If you want the reverse, do (b.value - a.value).
+
+    let result = `<div style="margin: 0 0 5px 0; font-weight: bold;">${validPoints[0].axisValue}</div>`;
+    
+    validPoints.forEach((p) => {
+      result += `
+        <div style="display: flex; align-items: center; margin: 3px 0;">
+          <span style="
+            display: inline-block; 
+            width: 10px; 
+            height: 10px; 
+            background-color: ${p.color}; 
+            border-radius: 50%; 
+            margin-right: 5px;
+          "></span>
+          <span style="margin-right: 5px;">${p.seriesName}:</span>
+          <span style="font-weight: bold;">Rank #${p.value}</span>
+        </div>
+      `;
+    });
+    
+    return result;
+  }
+},
+
         grid: {
           left: 70,
           right: 120,
-          top: 90,
+          top: 120,
           bottom: 50
         },
         xAxis: {
@@ -106,15 +126,21 @@ const GitHubLanguageRace: React.FC = () => {
             }
           }
         },
+        
         yAxis: {
           type: 'value',
           min: 1,
           max: 10,
+          interval: 1,
           inverse: true,
           axisLine: {
             lineStyle: {
               color: 'rgba(255, 255, 255, 0.3)'
             }
+          },
+          axisPointer: {
+            show: true,
+            snap: true
           },
           axisTick: {
             show: false
@@ -148,12 +174,25 @@ const GitHubLanguageRace: React.FC = () => {
           return {
             name: item.name,
             type: 'line',
+            // Put a symbol on every data point
+            showAllSymbol: true,
             symbol: 'circle',
             symbolSize: 10,
-            sampling: 'average',
-            itemStyle: {
-              color: item.color
-            },
+  // Important: turn on clipping so the line
+  // and markers only appear as the line is drawn
+            clip: true,
+  // Example line and item style
+            lineStyle: { width: 4, color: item.color },
+            itemStyle: { color: item.color },
+            // data: item.values
+            // name: item.name,
+            // type: 'line',
+            // symbol: 'circle',
+            // symbolSize: 10,
+            // sampling: 'average',
+            // itemStyle: {
+            //   color: item.color
+            // },
             lineStyle: {
               width: 4,
               color: item.color,
@@ -206,7 +245,7 @@ const GitHubLanguageRace: React.FC = () => {
             }))
           });
         }
-      }, 9000);
+      }, 7600);
     }
 
     return () => {

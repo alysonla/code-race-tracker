@@ -8,7 +8,6 @@ const Index = () => {
         <GitHubLanguageRace />
         <div className="text-center mt-8 text-white/60 text-sm">
           <p>Data visualizes the ranking of programming languages on GitHub from 2014 to 2024</p>
-          <p>Based on count of distinct users contributing to projects of each language</p>
           <p className="mt-4 text-xs text-white/40">
             Hover over lines for more details. Click language names in the legend to show/hide languages.
           </p>
@@ -29,6 +28,15 @@ const Index = () => {
               className="text-[#3EAFA8] hover:underline"
             >
               Built with Apache ECharts
+            </a>
+            <span className="text-white/30">|</span>
+            <a 
+              href="https://alysonla.com" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="text-[#6F8FF7] hover:underline"
+            >
+              Made with ❤️ by Alyson La + lovable
             </a>
           </div>
         </div>
