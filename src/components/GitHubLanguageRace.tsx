@@ -1,4 +1,3 @@
-
 import React, { useEffect, useRef, useState } from 'react';
 import * as echarts from 'echarts';
 import { githubLanguageData, yearLabels } from '@/data/githubLanguageData';
@@ -47,7 +46,8 @@ const GitHubLanguageRace: React.FC = () => {
           subtextStyle: {
             color: '#aaa',
             fontSize: 14,
-            fontFamily: 'monospace'
+            fontFamily: 'monospace',
+            margin: [10, 0, 30, 0]
           }
         },
         backgroundColor: '#0A0A29',
@@ -134,20 +134,14 @@ const GitHubLanguageRace: React.FC = () => {
           }
         },
         series: githubLanguageData.map(item => {
-          // Determine when to show end labels for specific languages
           let shouldShowEndLabel = true;
           
-          // TypeScript only appears from 2019 (index 5) onwards
           if (item.name === 'TypeScript') {
-            // Only show TypeScript label when animation is finished
             shouldShowEndLabel = animationFinished;
           } 
-          // Go only appears in 2023 (index 9) onwards
           else if (item.name === 'Go') {
-            // Only show Go label when animation is finished
             shouldShowEndLabel = animationFinished;
           }
-          // Always show labels for Ruby and Obj-C even though they disappear
           else if (item.name === 'Ruby' || item.name === 'Obj-C') {
             shouldShowEndLabel = true;
           }
@@ -201,10 +195,8 @@ const GitHubLanguageRace: React.FC = () => {
 
       chartInstance.current.setOption(option);
       
-      // Set animation finished flag after the animation completes
       setTimeout(() => {
         setAnimationFinished(true);
-        // Update the chart with the new endLabel settings
         if (chartInstance.current) {
           chartInstance.current.setOption({
             series: githubLanguageData.map(item => ({
@@ -215,7 +207,7 @@ const GitHubLanguageRace: React.FC = () => {
             }))
           });
         }
-      }, 6000); // Wait a bit longer than animationDuration to ensure animation is complete
+      }, 6000);
     }
 
     return () => {
