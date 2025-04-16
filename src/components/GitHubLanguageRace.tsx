@@ -1,4 +1,3 @@
-
 import React, { useEffect, useRef } from 'react';
 import * as echarts from 'echarts';
 import { githubLanguageData, yearLabels } from '@/data/githubLanguageData';
@@ -160,8 +159,25 @@ const GitHubLanguageRace: React.FC = () => {
             }
           },
           data: item.values,
+          endLabel: {
+            show: true,
+            formatter: (params) => {
+              // Only show end label if the last value is not null
+              const lastValue = item.values[item.values.length - 1];
+              return lastValue !== null ? item.name : '';
+            },
+            color: '#fff',
+            fontSize: 14,
+            fontWeight: 'bold',
+            backgroundColor: item.color,
+            padding: [5, 8],
+            borderRadius: 3
+          },
           z: 10 - Math.min(...item.values.filter(v => v !== null))
-        }))
+        })),
+        animationDuration: 5000,
+        animationEasing: 'cubicInOut',
+        animationDelay: (idx: number) => idx * 300
       };
 
       chartInstance.current.setOption(option);
