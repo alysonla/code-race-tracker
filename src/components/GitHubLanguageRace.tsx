@@ -1,3 +1,4 @@
+
 import React, { useEffect, useRef, useState } from 'react';
 import * as echarts from 'echarts';
 import { githubLanguageData, yearLabels } from '@/data/githubLanguageData';
@@ -46,9 +47,10 @@ const GitHubLanguageRace: React.FC = () => {
           subtextStyle: {
             color: '#aaa',
             fontSize: 14,
-            fontFamily: 'monospace',
-            margin: [10, 0, 30, 0]
-          }
+            fontFamily: 'monospace'
+          },
+          // Adding padding to the whole title component to create space below the subtitle
+          padding: [0, 0, 30, 0]
         },
         backgroundColor: '#0A0A29',
         tooltip: {
@@ -81,7 +83,7 @@ const GitHubLanguageRace: React.FC = () => {
         grid: {
           left: 70,
           right: 120,
-          top: 90,
+          top: 90, // Increased to accommodate more space below the subtitle
           bottom: 50
         },
         xAxis: {
