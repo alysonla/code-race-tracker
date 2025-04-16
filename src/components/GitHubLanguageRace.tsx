@@ -140,7 +140,17 @@ const GitHubLanguageRace: React.FC = () => {
             }
           },
           data: item.values,
-          z: 10 - Math.min(...item.values || [0])
+          endLabel: {
+            show: true,
+            formatter: '{a}',
+            color: '#fff',
+            fontSize: 14,
+            fontWeight: 'bold',
+            backgroundColor: item.color,
+            padding: [5, 8],
+            borderRadius: 3
+          },
+          z: 10 - Math.min(...item.values)
         })),
         animationDuration: 5000,
         animationEasing: 'cubicInOut',
