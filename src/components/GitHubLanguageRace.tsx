@@ -8,7 +8,6 @@ const GitHubLanguageRace: React.FC = () => {
   const chartRef = useRef<HTMLDivElement>(null);
   const chartInstance = useRef<echarts.ECharts | null>(null);
   const [animationFinished, setAnimationFinished] = useState(false);
-  const [chartReady, setChartReady] = useState(false);
 
   useEffect(() => {
     return () => {
@@ -29,25 +28,9 @@ const GitHubLanguageRace: React.FC = () => {
     window.addEventListener('resize', handleResize);
 
     if (chartRef.current && !chartInstance.current) {
-      // Initialize chart without animation
       chartInstance.current = echarts.init(chartRef.current, undefined, {
         renderer: 'canvas'
       });
-      
-      const renderEndLabels = () => {
-        if (chartInstance.current) {
-          // Update chart to show end labels after animation completes
-          chartInstance.current.setOption({
-            series: githubLanguageData.map(item => ({
-              name: item.name,
-              endLabel: {
-                show: true
-              }
-            }))
-          });
-          setAnimationFinished(true);
-        }
-      };
       
       const option: echarts.EChartsOption = {
         title: {
@@ -151,6 +134,24 @@ const GitHubLanguageRace: React.FC = () => {
           }
         },
         series: githubLanguageData.map(item => {
+          // Determine when to show end labels for specific languages
+          let shouldShowEndLabel = true;
+          
+          // TypeScript only appears from 2019 (index 5) onwards
+          if (item.name === 'TypeScript') {
+            // Only show TypeScript label when animation is finished
+            shouldShowEndLabel = animationFinished;
+          } 
+          // Go only appears in 2023 (index 9) onwards
+          else if (item.name === 'Go') {
+            // Only show Go label when animation is finished
+            shouldShowEndLabel = animationFinished;
+          }
+          // Always show labels for Ruby and Obj-C even though they disappear
+          else if (item.name === 'Ruby' || item.name === 'Obj-C') {
+            shouldShowEndLabel = true;
+          }
+          
           return {
             name: item.name,
             type: 'line',
@@ -177,7 +178,7 @@ const GitHubLanguageRace: React.FC = () => {
             },
             data: item.values,
             endLabel: {
-              show: false,
+              show: shouldShowEndLabel,
               formatter: (params) => {
                 return item.name;
               },
@@ -191,69 +192,36 @@ const GitHubLanguageRace: React.FC = () => {
             z: 10 - Math.min(...item.values.filter(v => v !== null))
           };
         }),
-        // Initially set animation duration to 0 to render the first frame
-        animationDuration: 0,
+        animationDuration: 5000,
         animationEasing: 'cubicInOut',
-        animationDelay: 0,
-        animationDurationUpdate: 0,
+        animationDelay: (idx: number) => idx * 300,
+        animationDurationUpdate: 300,
         animationEasingUpdate: 'linear'
       };
 
       chartInstance.current.setOption(option);
-      setChartReady(true);
+      
+      // Set animation finished flag after the animation completes
+      setTimeout(() => {
+        setAnimationFinished(true);
+        // Update the chart with the new endLabel settings
+        if (chartInstance.current) {
+          chartInstance.current.setOption({
+            series: githubLanguageData.map(item => ({
+              name: item.name,
+              endLabel: {
+                show: true
+              }
+            }))
+          });
+        }
+      }, 6000); // Wait a bit longer than animationDuration to ensure animation is complete
     }
 
     return () => {
       window.removeEventListener('resize', handleResize);
-      if (chartInstance.current) {
-        chartInstance.current.off('finished');
-      }
     };
-  }, []);
-
-  // Start animation after chart is ready with a delay
-  useEffect(() => {
-    if (chartReady && chartInstance.current) {
-      // Delay animation start by 1.5 seconds
-      const animationDelay = setTimeout(() => {
-        if (chartInstance.current) {
-          const renderEndLabels = () => {
-            if (chartInstance.current) {
-              chartInstance.current.setOption({
-                series: githubLanguageData.map(item => ({
-                  name: item.name,
-                  endLabel: {
-                    show: true
-                  }
-                }))
-              });
-              setAnimationFinished(true);
-            }
-          };
-
-          // Start animation with proper settings
-          chartInstance.current.setOption({
-            animationDuration: 3000,
-            animationDelay: (idx: number) => idx * 300,
-            animationDurationUpdate: 300,
-            animationEasingUpdate: 'linear'
-          });
-          
-          chartInstance.current.on('finished', renderEndLabels, { priority: 'high' });
-          
-          setTimeout(() => {
-            if (!animationFinished) {
-              renderEndLabels();
-            }
-          }, 3500);
-        }
-      }, 1500);
-
-      return () => {
-        clearTimeout(animationDelay);
-      };
-    }
-  }, [chartReady, animationFinished]);
+  }, [animationFinished]);
 
   return (
     <div className="w-full h-full bg-[#0A0A29] rounded-lg shadow-xl overflow-hidden border border-white/10">
