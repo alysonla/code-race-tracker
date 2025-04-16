@@ -152,9 +152,9 @@ const GitHubLanguageRace: React.FC = () => {
           },
           z: 10 - Math.min(...item.values)
         })),
-        animationDuration: 3000,
+        animationDuration: 5000,
         animationEasing: 'cubicInOut',
-        animationDelay: (idx: number) => idx * 200
+        animationDelay: (idx: number) => idx * 300
       };
 
       chartInstance.current.setOption(option);
