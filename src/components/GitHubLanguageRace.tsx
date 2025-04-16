@@ -206,7 +206,7 @@ const GitHubLanguageRace: React.FC = () => {
             }))
           });
         }
-      }, 9000);
+      }, 7000);
     }
 
     return () => {
