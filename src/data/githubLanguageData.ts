@@ -1,5 +1,4 @@
 
-
 export const githubLanguageData = [
   {
     name: 'Python',
@@ -59,7 +58,7 @@ export const githubLanguageData = [
   {
     name: 'Obj-C',
     color: '#90D698',
-    values: [10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10]
+    values: [10, 10, 10, null, null, null, null, null, null, null, null]
   }
 ];
 
@@ -81,4 +80,3 @@ export const getRaceData = (year: number) => {
     };
   }).sort((a, b) => a.currentRank - b.currentRank);
 };
-
