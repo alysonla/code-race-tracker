@@ -148,9 +148,6 @@ const GitHubLanguageRace: React.FC = () => {
           }
         },
         series: githubLanguageData.map(item => {
-          // Hide end labels initially for all languages
-          const initialShowEndLabel = !(item.name === 'TypeScript' || item.name === 'Go');
-          
           return {
             name: item.name,
             type: 'line',
@@ -177,7 +174,7 @@ const GitHubLanguageRace: React.FC = () => {
             },
             data: item.values,
             endLabel: {
-              show: initialShowEndLabel,
+              show: false,
               formatter: (params) => {
                 return item.name;
               },
@@ -191,7 +188,7 @@ const GitHubLanguageRace: React.FC = () => {
             z: 10 - Math.min(...item.values.filter(v => v !== null))
           };
         }),
-        animationDuration: 5000,
+        animationDuration: 3000,
         animationEasing: 'cubicInOut',
         animationDelay: (idx: number) => idx * 300,
         animationDurationUpdate: 300,
@@ -200,15 +197,13 @@ const GitHubLanguageRace: React.FC = () => {
 
       chartInstance.current.setOption(option);
       
-      // Register animation end event handler
-      chartInstance.current.on('finished', renderEndLabels);
+      chartInstance.current.on('finished', renderEndLabels, { priority: 'high' });
       
-      // Fallback in case the 'finished' event doesn't fire
       setTimeout(() => {
         if (!animationFinished) {
           renderEndLabels();
         }
-      }, 5500); // Slightly longer than animationDuration to ensure animation is complete
+      }, 3500);
     }
 
     return () => {
