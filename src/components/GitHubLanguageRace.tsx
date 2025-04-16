@@ -1,5 +1,4 @@
-
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef } from 'react';
 import * as echarts from 'echarts';
 import { githubLanguageData, yearLabels } from '@/data/githubLanguageData';
 import { cn } from '@/lib/utils';
@@ -9,7 +8,6 @@ const GitHubLanguageRace: React.FC = () => {
   const chartInstance = useRef<echarts.ECharts | null>(null);
 
   useEffect(() => {
-    // Cleanup function to dispose chart when component unmounts
     return () => {
       if (chartInstance.current) {
         chartInstance.current.dispose();
@@ -19,7 +17,6 @@ const GitHubLanguageRace: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    // Initialize or resize chart when component mounts or window resizes
     const handleResize = () => {
       if (chartInstance.current) {
         chartInstance.current.resize();
@@ -28,13 +25,11 @@ const GitHubLanguageRace: React.FC = () => {
     
     window.addEventListener('resize', handleResize);
 
-    // Initialize chart if not already done
     if (chartRef.current && !chartInstance.current) {
       chartInstance.current = echarts.init(chartRef.current, undefined, {
         renderer: 'canvas'
       });
       
-      // Set chart options
       const option: echarts.EChartsOption = {
         title: {
           text: 'Top programming languages on GitHub',
@@ -64,23 +59,6 @@ const GitHubLanguageRace: React.FC = () => {
           textStyle: {
             color: '#fff'
           }
-        },
-        legend: {
-          type: 'scroll',
-          orient: 'vertical',
-          right: 10,
-          top: 100,
-          bottom: 10,
-          textStyle: {
-            color: '#fff'
-          },
-          selected: githubLanguageData.reduce((acc, item) => {
-            acc[item.name] = true;
-            return acc;
-          }, {} as Record<string, boolean>),
-          icon: 'roundRect',
-          itemWidth: 15,
-          itemHeight: 8
         },
         grid: {
           left: 70,
@@ -172,18 +150,16 @@ const GitHubLanguageRace: React.FC = () => {
             padding: [5, 8],
             borderRadius: 3
           },
-          z: 10 - Math.min(...item.values) // Higher-ranked languages will be on top
+          z: 10 - Math.min(...item.values)
         })),
-        animationDuration: 1500,
-        animationEasing: 'cubicOut',
-        animationDelay: (idx: number) => idx * 100
+        animationDuration: 3000,
+        animationEasing: 'cubicInOut',
+        animationDelay: (idx: number) => idx * 200
       };
 
-      // Set options to chart instance
       chartInstance.current.setOption(option);
     }
 
-    // Cleanup event listener
     return () => {
       window.removeEventListener('resize', handleResize);
     };
