@@ -1,3 +1,4 @@
+
 import React, { useEffect, useRef } from 'react';
 import * as echarts from 'echarts';
 import { githubLanguageData, yearLabels } from '@/data/githubLanguageData';
@@ -131,45 +132,62 @@ const GitHubLanguageRace: React.FC = () => {
             }
           }
         },
-        series: githubLanguageData.map(item => ({
-          name: item.name,
-          type: 'line',
-          symbol: 'circle',
-          symbolSize: 10,
-          sampling: 'average',
-          itemStyle: {
-            color: item.color
-          },
-          lineStyle: {
-            width: 4,
-            color: item.color,
-            shadowColor: 'rgba(0, 0, 0, 0.5)',
-            shadowBlur: 5
-          },
-          emphasis: {
-            focus: 'series',
-            lineStyle: {
-              width: 6
-            },
+        series: githubLanguageData.map(item => {
+          // Find the first non-null value for each language
+          const firstAppearanceIndex = item.values.findIndex(v => v !== null);
+          
+          // For languages that appear later, we need to determine when to show their label
+          let shouldShowEndLabel = true;
+          
+          // Special handling for TypeScript and Go
+          if (item.name === 'TypeScript') {
+            // TypeScript appears in position 5 (2019)
+            shouldShowEndLabel = true;
+          } else if (item.name === 'Go') {
+            // Go appears in position 9 (2023)
+            shouldShowEndLabel = true;
+          }
+          
+          return {
+            name: item.name,
+            type: 'line',
+            symbol: 'circle',
+            symbolSize: 10,
+            sampling: 'average',
             itemStyle: {
-              borderWidth: 3
-            }
-          },
-          data: item.values,
-          endLabel: {
-            show: true,
-            formatter: (params) => {
-              return item.name;
+              color: item.color
             },
-            color: '#fff',
-            fontSize: 14,
-            fontWeight: 'bold',
-            backgroundColor: item.color,
-            padding: [5, 8],
-            borderRadius: 3
-          },
-          z: 10 - Math.min(...item.values.filter(v => v !== null))
-        })),
+            lineStyle: {
+              width: 4,
+              color: item.color,
+              shadowColor: 'rgba(0, 0, 0, 0.5)',
+              shadowBlur: 5
+            },
+            emphasis: {
+              focus: 'series',
+              lineStyle: {
+                width: 6
+              },
+              itemStyle: {
+                borderWidth: 3
+              }
+            },
+            data: item.values,
+            endLabel: {
+              show: shouldShowEndLabel,
+              formatter: (params) => {
+                return item.name;
+              },
+              color: '#fff',
+              fontSize: 14,
+              fontWeight: 'bold',
+              backgroundColor: item.color,
+              padding: [5, 8],
+              borderRadius: 3
+            },
+            z: 10 - Math.min(...item.values.filter(v => v !== null))
+          };
+        }),
         animationDuration: 5000,
         animationEasing: 'cubicInOut',
         animationDelay: (idx: number) => idx * 300
