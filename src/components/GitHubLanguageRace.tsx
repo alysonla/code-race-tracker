@@ -1,5 +1,5 @@
 
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import * as echarts from 'echarts';
 import { githubLanguageData, yearLabels } from '@/data/githubLanguageData';
 import { cn } from '@/lib/utils';
@@ -7,6 +7,7 @@ import { cn } from '@/lib/utils';
 const GitHubLanguageRace: React.FC = () => {
   const chartRef = useRef<HTMLDivElement>(null);
   const chartInstance = useRef<echarts.ECharts | null>(null);
+  const [animationFinished, setAnimationFinished] = useState(false);
 
   useEffect(() => {
     return () => {
@@ -133,18 +134,21 @@ const GitHubLanguageRace: React.FC = () => {
           }
         },
         series: githubLanguageData.map(item => {
-          // Find the first non-null value for each language
-          const firstAppearanceIndex = item.values.findIndex(v => v !== null);
-          
-          // For languages that appear later, we need to determine when to show their label
+          // Determine when to show end labels for specific languages
           let shouldShowEndLabel = true;
           
-          // Special handling for TypeScript and Go
+          // TypeScript only appears from 2019 (index 5) onwards
           if (item.name === 'TypeScript') {
-            // TypeScript appears in position 5 (2019)
-            shouldShowEndLabel = true;
-          } else if (item.name === 'Go') {
-            // Go appears in position 9 (2023)
+            // Only show TypeScript label when animation is finished
+            shouldShowEndLabel = animationFinished;
+          } 
+          // Go only appears in 2023 (index 9) onwards
+          else if (item.name === 'Go') {
+            // Only show Go label when animation is finished
+            shouldShowEndLabel = animationFinished;
+          }
+          // Always show labels for Ruby and Obj-C even though they disappear
+          else if (item.name === 'Ruby' || item.name === 'Obj-C') {
             shouldShowEndLabel = true;
           }
           
@@ -190,16 +194,34 @@ const GitHubLanguageRace: React.FC = () => {
         }),
         animationDuration: 5000,
         animationEasing: 'cubicInOut',
-        animationDelay: (idx: number) => idx * 300
+        animationDelay: (idx: number) => idx * 300,
+        animationDurationUpdate: 300,
+        animationEasingUpdate: 'linear'
       };
 
       chartInstance.current.setOption(option);
+      
+      // Set animation finished flag after the animation completes
+      setTimeout(() => {
+        setAnimationFinished(true);
+        // Update the chart with the new endLabel settings
+        if (chartInstance.current) {
+          chartInstance.current.setOption({
+            series: githubLanguageData.map(item => ({
+              name: item.name,
+              endLabel: {
+                show: true
+              }
+            }))
+          });
+        }
+      }, 6000); // Wait a bit longer than animationDuration to ensure animation is complete
     }
 
     return () => {
       window.removeEventListener('resize', handleResize);
     };
-  }, []);
+  }, [animationFinished]);
 
   return (
     <div className="w-full h-full bg-[#0A0A29] rounded-lg shadow-xl overflow-hidden border border-white/10">
