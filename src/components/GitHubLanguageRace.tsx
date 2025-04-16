@@ -1,3 +1,4 @@
+
 import React, { useEffect, useRef } from 'react';
 import * as echarts from 'echarts';
 import { githubLanguageData, yearLabels } from '@/data/githubLanguageData';
@@ -58,6 +59,25 @@ const GitHubLanguageRace: React.FC = () => {
           borderColor: 'rgba(255, 255, 255, 0.2)',
           textStyle: {
             color: '#fff'
+          },
+          formatter: function(params) {
+            // Filter out points with null values
+            const validPoints = params.filter(param => param.value !== null && param.value !== undefined);
+            if (validPoints.length === 0) return '';
+            
+            // Create tooltip content with year as title
+            let result = `<div style="margin: 0 0 5px 0; font-weight: bold;">${validPoints[0].axisValue}</div>`;
+            
+            // Add each valid data point
+            validPoints.forEach(param => {
+              result += `<div style="display: flex; align-items: center; margin: 3px 0;">
+                <span style="display: inline-block; width: 10px; height: 10px; background-color: ${param.color}; border-radius: 50%; margin-right: 5px;"></span>
+                <span style="margin-right: 5px;">${param.seriesName}:</span>
+                <span style="font-weight: bold;">${param.value === null ? '-' : `Rank #${param.value}`}</span>
+              </div>`;
+            });
+            
+            return result;
           }
         },
         grid: {
@@ -140,21 +160,8 @@ const GitHubLanguageRace: React.FC = () => {
             }
           },
           data: item.values,
-          endLabel: {
-            show: true,
-            formatter: '{a}',
-            color: '#fff',
-            fontSize: 14,
-            fontWeight: 'bold',
-            backgroundColor: item.color,
-            padding: [5, 8],
-            borderRadius: 3
-          },
-          z: 10 - Math.min(...item.values)
-        })),
-        animationDuration: 5000,
-        animationEasing: 'cubicInOut',
-        animationDelay: (idx: number) => idx * 300
+          z: 10 - Math.min(...item.values.filter(v => v !== null))
+        }))
       };
 
       chartInstance.current.setOption(option);
